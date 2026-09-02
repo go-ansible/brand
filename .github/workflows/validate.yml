@@ -1,0 +1,37 @@
+name: validate
+
+# Asset-only repo: there is nothing to build or test, but a required-file
+# check still catches an accidental deletion (e.g. a bad rebase dropping the
+# color SVG) and gives every PR at least one real, green check to merge on.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  required-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check required brand assets are present
+        run: |
+          set -e
+          for f in \
+            svg/color/go-ansible.svg \
+            svg/white/go-ansible.svg \
+            svg/black/go-ansible.svg \
+            avatar/go-ansible.png \
+            social/go-ansible.png \
+            ico/go-ansible.ico \
+            icns/go-ansible.icns; do
+            if [ ! -s "$f" ]; then
+              echo "::error::missing required asset: $f"
+              exit 1
+            fi
+          done
+          echo "all required brand assets present"
